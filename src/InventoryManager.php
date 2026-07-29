@@ -81,3 +81,4 @@ class InventoryManager extends Manager
         );
     }
 }
+
