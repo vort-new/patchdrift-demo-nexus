@@ -6,7 +6,7 @@ class RateLimitConfig
 {
     public function __construct(
         public int $capacity,
-        public int $rate, 
+        public int $rate,
         public int $cost = 1
     ) {}
 }

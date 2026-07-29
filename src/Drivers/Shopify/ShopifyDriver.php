@@ -7,9 +7,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Malikad778\LaravelNexus\Contracts\InventoryDriver;
+use Malikad778\LaravelNexus\Contracts\WebhookVerifier;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusInventoryUpdate;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusProduct;
 use Malikad778\LaravelNexus\DataTransferObjects\RateLimitConfig;
+use Malikad778\LaravelNexus\Webhooks\Verifiers\ShopifyWebhookVerifier;
 
 class ShopifyDriver implements InventoryDriver
 {
@@ -157,9 +159,9 @@ class ShopifyDriver implements InventoryDriver
         return $request->header('X-Shopify-Topic') ?? 'unknown';
     }
 
-    public function getWebhookVerifier(): \Malikad778\LaravelNexus\Contracts\WebhookVerifier
+    public function getWebhookVerifier(): WebhookVerifier
     {
-        return new \Malikad778\LaravelNexus\Webhooks\Verifiers\ShopifyWebhookVerifier;
+        return new ShopifyWebhookVerifier;
     }
 
     public function parseWebhookPayload(Request $request): NexusInventoryUpdate

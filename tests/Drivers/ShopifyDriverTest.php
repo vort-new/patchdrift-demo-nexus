@@ -50,7 +50,6 @@ it('can update inventory on shopify', function () {
         'location_id' => '888888',
     ]);
 
-    
     Http::fake([
         'test-shop.myshopify.com/admin/api/2024-01/variants/987654.json' => Http::response([
             'variant' => [
@@ -72,7 +71,6 @@ it('can update inventory on shopify', function () {
 
     expect($result)->toBeTrue();
 
-    
     Http::assertSent(function ($request) {
         return $request->url() === 'https://test-shop.myshopify.com/admin/api/2024-01/inventory_levels/set.json' &&
                $request['location_id'] === '888888' &&

@@ -8,8 +8,6 @@ use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
-    
-
     public static $latestResponse = null;
 
     protected function setUp(): void

@@ -24,7 +24,6 @@ class AwsV4Signer
         $headers['host'] = $host;
         $headers['x-amz-date'] = $now;
 
-        
         $canonicalHeaders = '';
         $signedHeaders = '';
         ksort($headers);
@@ -38,11 +37,9 @@ class AwsV4Signer
         $payloadHash = hash('sha256', $payload);
         $canonicalRequest = "{$method}\n{$path}\n{$query}\n{$canonicalHeaders}\n{$signedHeaders}\n{$payloadHash}";
 
-        
         $credentialScope = "{$date}/{$this->region}/{$this->service}/aws4_request";
         $stringToSign = "AWS4-HMAC-SHA256\n{$now}\n{$credentialScope}\n".hash('sha256', $canonicalRequest);
 
-        
         $kSecret = 'AWS4'.$this->secretAccessKey;
         $kDate = hash_hmac('sha256', $date, $kSecret, true);
         $kRegion = hash_hmac('sha256', $this->region, $kDate, true);
@@ -50,7 +47,6 @@ class AwsV4Signer
         $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
         $signature = hash_hmac('sha256', $stringToSign, $kSigning);
 
-        
         $authorization = "AWS4-HMAC-SHA256 Credential={$this->accessKeyId}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
 
         return array_merge($headers, ['Authorization' => $authorization]);

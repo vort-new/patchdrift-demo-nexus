@@ -1,25 +1,18 @@
 <?php
 
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Malikad778\LaravelNexus\Jobs\PushInventoryJob;
 
 it('logs failed jobs to dlq table', function () {
-    
-    
-    
-    
 
-    
     $job = new PushInventoryJob('shopify', '123', 5);
-    $job->fail(new \Exception('Test Failure'));
-
-    
-    
+    $job->fail(new Exception('Test Failure'));
 
     $connectionName = 'database';
-    $jobMock = Mockery::mock(\Illuminate\Contracts\Queue\Job::class);
+    $jobMock = Mockery::mock(Job::class);
     $jobMock->shouldReceive('resolveName')->andReturn(PushInventoryJob::class);
     $jobMock->shouldReceive('payload')->andReturn(['job' => PushInventoryJob::class, 'data' => []]);
     $jobMock->shouldReceive('attempts')->andReturn(1);
@@ -27,13 +20,11 @@ it('logs failed jobs to dlq table', function () {
     $event = new JobFailed(
         $connectionName,
         $jobMock,
-        new \Exception('Test Failure')
+        new Exception('Test Failure')
     );
 
-    
     Event::dispatch($event);
 
-    
     $record = DB::table('nexus_dead_letter_queue')->first();
 
     expect($record)->not->toBeNull();

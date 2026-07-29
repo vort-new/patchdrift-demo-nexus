@@ -7,9 +7,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Malikad778\LaravelNexus\Contracts\InventoryDriver;
+use Malikad778\LaravelNexus\Contracts\WebhookVerifier;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusInventoryUpdate;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusProduct;
 use Malikad778\LaravelNexus\DataTransferObjects\RateLimitConfig;
+use Malikad778\LaravelNexus\Webhooks\Verifiers\AmazonWebhookVerifier;
 
 class AmazonDriver implements InventoryDriver
 {
@@ -75,7 +77,7 @@ class AmazonDriver implements InventoryDriver
         return collect($items)->map(function ($item) {
             $summary = $item['summaries'][0] ?? [];
 
-            return NexusProduct::fromAmazon($item); 
+            return NexusProduct::fromAmazon($item);
         });
     }
 
@@ -121,7 +123,7 @@ class AmazonDriver implements InventoryDriver
         $endpoint = "https://sellingpartnerapi-na.amazon.com/listings/2021-08-01/items/{$this->config['seller_id']}/{$remoteId}";
 
         $body = [
-            'productType' => 'PRODUCT', 
+            'productType' => 'PRODUCT',
             'patches' => [
                 [
                     'op' => 'replace',
@@ -166,7 +168,7 @@ class AmazonDriver implements InventoryDriver
     public function pushInventory(NexusInventoryUpdate $update): bool
     {
         if (! $update->remoteId) {
-            return false; 
+            return false;
         }
 
         return $this->updateInventory($update->remoteId, $update->quantity);
@@ -184,24 +186,23 @@ class AmazonDriver implements InventoryDriver
         return $content['Type'] ?? 'unknown';
     }
 
-    public function getWebhookVerifier(): \Malikad778\LaravelNexus\Contracts\WebhookVerifier
+    public function getWebhookVerifier(): WebhookVerifier
     {
-        return new \Malikad778\LaravelNexus\Webhooks\Verifiers\AmazonWebhookVerifier;
+        return new AmazonWebhookVerifier;
     }
 
     public function parseWebhookPayload(Request $request): NexusInventoryUpdate
     {
-        
+
         $content = json_decode($request->getContent(), true);
         $message = json_decode($content['Message'] ?? '{}', true);
 
-        
         $sku = $message['SellerSKU'] ?? 'unknown';
         $asin = $message['ASIN'] ?? '';
 
         return new NexusInventoryUpdate(
             sku: $sku,
-            quantity: 0, 
+            quantity: 0,
             remoteId: $asin,
             meta: $message
         );
@@ -209,7 +210,7 @@ class AmazonDriver implements InventoryDriver
 
     public function getRateLimitConfig(): RateLimitConfig
     {
-        
+
         return new RateLimitConfig(
             capacity: 5,
             rate: 1,

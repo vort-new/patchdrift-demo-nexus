@@ -7,8 +7,6 @@ use Illuminate\Support\Collection;
 
 class NexusProduct implements Arrayable
 {
-    
-
     public function __construct(
         public string $id,
         public string $name,
@@ -31,7 +29,6 @@ class NexusProduct implements Arrayable
             remoteData: $v
         ));
 
-        
         $mainVariant = $variants->first();
 
         return new self(
@@ -49,7 +46,7 @@ class NexusProduct implements Arrayable
     public static function fromWooCommerce(array $data): self
     {
         $variants = collect($data['variations'] ?? [])->map(fn ($v) => new NexusVariant(
-            id: (string) ($v['id'] ?? $v), 
+            id: (string) ($v['id'] ?? $v),
             sku: $v['sku'] ?? '',
             price: (float) ($v['price'] ?? 0),
             quantity: (int) ($v['stock_quantity'] ?? 0),
@@ -71,13 +68,13 @@ class NexusProduct implements Arrayable
 
     public static function fromAmazon(array $data): self
     {
-        
+
         $variants = collect($data['relationships'] ?? [])
             ->filter(fn ($r) => $r['type'] === 'VARIATION')
             ->flatMap(fn ($r) => $r['childAsins'] ?? [])
             ->map(fn ($asin) => new NexusVariant(
                 id: (string) $asin,
-                sku: '', 
+                sku: '',
                 price: null,
                 quantity: null,
                 options: [],
@@ -97,7 +94,7 @@ class NexusProduct implements Arrayable
 
     public static function fromEtsy(array $data): self
     {
-        
+
         $variants = collect($data['products'] ?? [])->map(fn ($p) => new NexusVariant(
             id: (string) ($p['product_id'] ?? ''),
             sku: $p['sku'] ?? '',

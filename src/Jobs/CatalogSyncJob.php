@@ -15,10 +15,10 @@ class CatalogSyncJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection|null  $products
-     *         An Eloquent collection of syncable models (must have a `quantity`
-     *         attribute and a `channelMappings` relationship).  When null the job
-     *         falls back to a full-catalog sync via ChannelSyncBatchJob.
+     * @param  Collection|null  $products
+     *                                     An Eloquent collection of syncable models (must have a `quantity`
+     *                                     attribute and a `channelMappings` relationship).  When null the job
+     *                                     falls back to a full-catalog sync via ChannelSyncBatchJob.
      * @param  array  $channels  Limit the sync to these channels (empty = all configured).
      */
     public function __construct(

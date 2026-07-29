@@ -12,6 +12,7 @@ use Malikad778\LaravelNexus\Events\ChannelThrottled;
 use Malikad778\LaravelNexus\Events\InventorySyncFailed;
 use Malikad778\LaravelNexus\Events\InventoryUpdated;
 use Malikad778\LaravelNexus\Facades\Nexus;
+use Malikad778\LaravelNexus\Models\ChannelMapping;
 use Malikad778\LaravelNexus\RateLimiting\TokenBucket;
 
 class PushInventoryJob implements ShouldBeUnique, ShouldQueue
@@ -26,9 +27,7 @@ class PushInventoryJob implements ShouldBeUnique, ShouldQueue
         public string $channel,
         public string $remoteId,
         public int $quantity
-    ) {
-        
-    }
+    ) {}
 
     public function uniqueId(): string
     {
@@ -37,22 +36,19 @@ class PushInventoryJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(TokenBucket $limiter): void
     {
-        
-        
-        
+
         $capacity = config("nexus.rate_limits.{$this->channel}.capacity", 10);
         $rate = config("nexus.rate_limits.{$this->channel}.rate", 1.0);
 
         if (! $limiter->acquire($this->channel, $capacity, $rate)) {
             ChannelThrottled::dispatch($this->channel, 5);
-            $this->release(5); 
+            $this->release(5);
 
             return;
         }
 
         $driver = Nexus::driver($this->channel);
 
-        
         try {
             $product = $driver->fetchProduct($this->remoteId);
             $previousQuantity = $product->quantity;
@@ -64,7 +60,7 @@ class PushInventoryJob implements ShouldBeUnique, ShouldQueue
         if ($driver->updateInventory($this->remoteId, $this->quantity)) {
             // Stamp last_synced_at on the channel mapping so the dashboard can show
             // per-channel freshness data without a separate query.
-            \Malikad778\LaravelNexus\Models\ChannelMapping::where('channel', $this->channel)
+            ChannelMapping::where('channel', $this->channel)
                 ->where('remote_id', $this->remoteId)
                 ->update(['last_synced_at' => now()]);
 

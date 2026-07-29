@@ -19,13 +19,12 @@ class WebhookProcessor
         } catch (Exception $e) {
             Log::error("WebhookProcessing failed. Channel [{$channel}] driver not found.", ['exception' => $e->getMessage()]);
 
-            return; 
+            return;
         }
 
         $topic = $driver->extractWebhookTopic($request);
         $rawPayload = $request->getContent();
 
-        
         $logId = DB::table('nexus_webhook_logs')->insertGetId([
             'channel' => $channel,
             'topic' => $topic,
@@ -36,7 +35,6 @@ class WebhookProcessor
             'updated_at' => now(),
         ]);
 
-        
         WebhookReceived::dispatch(
             $channel,
             json_decode($rawPayload, true) ?? [],
@@ -44,7 +42,6 @@ class WebhookProcessor
             $logId
         );
 
-        
         try {
             $updateDto = $driver->parseWebhookPayload($request);
 
@@ -52,9 +49,7 @@ class WebhookProcessor
                 $product = $driver->fetchProduct($updateDto->remoteId);
                 $previousQuantity = $product->quantity ?? 0;
             } catch (Exception $e) {
-                
-                
-                
+
                 throw new Exception("Unable to fetch product details for remote ID: {$updateDto->remoteId}. Original Error: {$e->getMessage()}", 0, $e);
             }
 
@@ -73,8 +68,6 @@ class WebhookProcessor
                 'exception' => $e->getMessage(),
             ]);
 
-            
-            
             Log::error("WebhookProcessing failed for log ID [{$logId}].", ['exception' => $e->getMessage()]);
         }
     }

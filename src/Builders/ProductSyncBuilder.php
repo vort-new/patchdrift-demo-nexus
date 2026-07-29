@@ -4,7 +4,6 @@ namespace Malikad778\LaravelNexus\Builders;
 
 use Illuminate\Database\Eloquent\Model;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusInventoryUpdate;
-use Malikad778\LaravelNexus\Facades\Nexus;
 use Malikad778\LaravelNexus\Jobs\PushInventoryJob;
 
 class ProductSyncBuilder
@@ -47,10 +46,6 @@ class ProductSyncBuilder
                 remoteId: $remoteId
             );
 
-            
-            
-            
-            
             $results[$channel] = PushInventoryJob::dispatch($channel, $update->remoteId, (int) $update->quantity);
         }
 

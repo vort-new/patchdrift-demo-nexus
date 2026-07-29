@@ -11,13 +11,9 @@ use Malikad778\LaravelNexus\DataTransferObjects\RateLimitConfig;
 
 interface InventoryDriver
 {
-    
-
     public function getProducts(Carbon $since): Collection;
 
     public function fetchProduct(string $remoteId): NexusProduct;
-
-    
 
     public function updateInventory(string $remoteId, int $quantity): bool;
 
@@ -32,8 +28,6 @@ interface InventoryDriver
     public function parseWebhookPayload(Request $request): NexusInventoryUpdate;
 
     public function getRateLimitConfig(): RateLimitConfig;
-
-    
 
     public function getChannelName(): string;
 }

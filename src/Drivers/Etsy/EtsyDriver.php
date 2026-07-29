@@ -7,9 +7,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Malikad778\LaravelNexus\Contracts\InventoryDriver;
+use Malikad778\LaravelNexus\Contracts\WebhookVerifier;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusInventoryUpdate;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusProduct;
 use Malikad778\LaravelNexus\DataTransferObjects\RateLimitConfig;
+use Malikad778\LaravelNexus\Webhooks\Verifiers\EtsyWebhookVerifier;
 
 class EtsyDriver implements InventoryDriver
 {
@@ -17,15 +19,7 @@ class EtsyDriver implements InventoryDriver
 
     protected function getAccessToken(): string
     {
-        
-        
-        
-        
 
-        
-        
-
-        
         if (! empty($this->config['access_token'])) {
             return $this->config['access_token'];
         }
@@ -41,8 +35,6 @@ class EtsyDriver implements InventoryDriver
                 return $response->json('access_token');
             }
 
-            
-            
         }
 
         throw new \RuntimeException('No valid access token available for Etsy. Please Configure ETSY_KEYSTRING and ETSY_REFRESH_TOKEN.');
@@ -88,23 +80,6 @@ class EtsyDriver implements InventoryDriver
     {
         $accessToken = $this->getAccessToken();
 
-        
-        
-
-        
-        
-
-        
-        
-
-        
-        
-
-        
-        
-        
-        
-
         $inventoryResponse = Http::withHeaders([
             'x-api-key' => $this->config['client_id'],
             'Authorization' => 'Bearer '.$accessToken,
@@ -116,7 +91,6 @@ class EtsyDriver implements InventoryDriver
 
         $inventory = $inventoryResponse->json();
 
-        
         if (isset($inventory['products'])) {
             foreach ($inventory['products'] as &$product) {
                 if (isset($product['offerings'])) {
@@ -154,22 +128,21 @@ class EtsyDriver implements InventoryDriver
         return $request->header('X-Etsy-Event') ?? 'unknown';
     }
 
-    public function getWebhookVerifier(): \Malikad778\LaravelNexus\Contracts\WebhookVerifier
+    public function getWebhookVerifier(): WebhookVerifier
     {
-        return new \Malikad778\LaravelNexus\Webhooks\Verifiers\EtsyWebhookVerifier($this->config);
+        return new EtsyWebhookVerifier($this->config);
     }
 
     public function parseWebhookPayload(Request $request): NexusInventoryUpdate
     {
         $payload = $request->json()->all();
 
-        
         $id = (string) ($payload['listing_id'] ?? '');
-        $qty = (int) ($payload['quantity'] ?? 0); 
+        $qty = (int) ($payload['quantity'] ?? 0);
 
         return new NexusInventoryUpdate(
             sku: 'ETSY-'.$id,
-            quantity: $qty, 
+            quantity: $qty,
             remoteId: $id,
             meta: $payload
         );
@@ -177,7 +150,7 @@ class EtsyDriver implements InventoryDriver
 
     public function getRateLimitConfig(): RateLimitConfig
     {
-        
+
         return new RateLimitConfig(
             capacity: 10,
             rate: 2,

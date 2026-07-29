@@ -54,7 +54,6 @@ it('can update inventory on woocommerce', function () {
 
     expect($result)->toBeTrue();
 
-    
     Http::assertSent(function ($request) {
         return $request->url() === 'https://test-store.com/wp-json/wc/v3/products/101' &&
                $request->method() === 'PUT' &&

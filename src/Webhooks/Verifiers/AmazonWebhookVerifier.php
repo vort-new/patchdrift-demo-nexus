@@ -12,7 +12,7 @@ class AmazonWebhookVerifier implements WebhookVerifier
 {
     public function verify(Request $request): bool
     {
-        
+
         $payload = $request->json()->all();
 
         if (empty($payload['Signature']) || empty($payload['SigningCertURL'])) {
@@ -21,14 +21,12 @@ class AmazonWebhookVerifier implements WebhookVerifier
 
         $certUrl = $payload['SigningCertURL'];
 
-        
         if (! preg_match('/^https:\/\/sns\.[a-zA-Z0-9-]{3,}\.amazonaws\.com(\.cn)?\//', $certUrl)) {
             Log::warning("Invalid SNS Certificate URL: {$certUrl}");
 
             return false;
         }
 
-        
         $certificate = Cache::remember('nexus:sns:cert:'.md5($certUrl), 3600, function () use ($certUrl) {
             $response = Http::get($certUrl);
 
@@ -39,10 +37,8 @@ class AmazonWebhookVerifier implements WebhookVerifier
             return false;
         }
 
-        
         $stringToSign = $this->buildStringToSign($payload);
 
-        
         $publicKey = openssl_get_publickey($certificate);
         if (! $publicKey) {
             return false;

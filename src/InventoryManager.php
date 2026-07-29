@@ -17,7 +17,7 @@ class InventoryManager extends Manager
     {
         $instance = clone $this;
         $instance->context = $context;
-        
+
         $instance->forgetDrivers();
 
         return $instance;
