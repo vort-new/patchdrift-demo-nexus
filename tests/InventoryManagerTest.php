@@ -8,7 +8,7 @@ it('can resolve the default driver', function () {
     config()->set('nexus.drivers.shopify', [
         'shop_url' => 'test-shop',
         'access_token' => 'test-token',
-        'api_version' => '2024-01',
+        'api_version' => '2026-07',
     ]);
 
     $driver = Nexus::driver();
@@ -21,7 +21,7 @@ it('can get channel name from driver', function () {
     config()->set('nexus.drivers.shopify', [
         'shop_url' => 'test-shop',
         'access_token' => 'test-token',
-        'api_version' => '2024-01',
+        'api_version' => '2026-07',
     ]);
 
     $driver = Nexus::driver('shopify');
