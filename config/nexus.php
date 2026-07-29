@@ -11,7 +11,9 @@ return [
         'shopify' => [
             'shop_url' => env('SHOPIFY_SHOP_URL'),
             'access_token' => env('SHOPIFY_ACCESS_TOKEN'),
-            'api_version' => '2024-01',
+            // 2024-01 已过支持期(每个版本最少支持 12 个月),对退役版本的请求会被静默
+            // "fall forward" 到当前受支持的最旧版本,行为可能与代码预期不一致
+            'api_version' => '2026-07',
             'location_id' => env('SHOPIFY_LOCATION_ID'),
             'webhook_secret' => env('SHOPIFY_WEBHOOK_SECRET'),
         ],
