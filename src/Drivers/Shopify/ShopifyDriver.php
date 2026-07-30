@@ -85,7 +85,14 @@ class ShopifyDriver implements InventoryDriver
             }
         GQL, ['id' => $this->toGid('Product', $remoteId)]);
 
-        return NexusProduct::fromShopify($this->normalizeProduct($data['product'] ?? []));
+        // REST 对不存在的商品返回 404,由 $response->throw() 抛出可捕获的 HTTP 异常。
+        // GraphQL 返回 200 且 data.product 为 null —— 若不在此拦截,空数组会一路传到
+        // NexusProduct 构造函数,变成一个与调用点无关的 TypeError。
+        if (($data['product'] ?? null) === null) {
+            throw new \RuntimeException("Shopify product not found: {$remoteId}");
+        }
+
+        return NexusProduct::fromShopify($this->normalizeProduct($data['product']));
     }
 
     public function updateInventory(string $remoteId, int $quantity): bool

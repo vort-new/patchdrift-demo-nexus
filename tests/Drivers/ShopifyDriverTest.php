@@ -162,3 +162,63 @@ it('fails inventory update when the variant has no inventory item', function () 
 
     expect($driver->updateInventory('nonexistent', 50))->toBeFalse();
 });
+
+/*
+ * 以下用例的响应桩由 Shopify 自己的 2026-07 schema 生成(逐个可空点置 null),
+ * 不是人手编的 —— 这样"用自己写的桩验证自己写的代码"的循环论证才被打破。
+ * 生成器: tools/mock-response.mjs --variant nulls-each
+ */
+
+it('throws a clear error when the product does not exist', function () {
+    config()->set('nexus.drivers.shopify', [
+        'shop_url' => 'test-shop.myshopify.com',
+        'access_token' => 'test-token',
+        'api_version' => '2026-07',
+    ]);
+
+    // schema 生成的桩: data.product 可空,置 null
+    // REST 时代这是 404 + 异常;GraphQL 返回 200 + null,不拦截就会变成 DTO 里的 TypeError
+    Http::fake([
+        'test-shop.myshopify.com/admin/api/2026-07/graphql.json' => Http::response(
+            ['data' => ['product' => null]], 200
+        ),
+    ]);
+
+    $driver = Nexus::driver('shopify');
+
+    expect(fn () => $driver->fetchProduct('999999'))
+        ->toThrow(RuntimeException::class);
+});
+
+it('handles null scalars in product variants', function () {
+    config()->set('nexus.drivers.shopify', [
+        'shop_url' => 'test-shop.myshopify.com',
+        'access_token' => 'test-token',
+        'api_version' => '2026-07',
+    ]);
+
+    // schema 生成的桩: sku / inventoryQuantity / barcode 在合约里都是可空的
+    Http::fake([
+        'test-shop.myshopify.com/admin/api/2026-07/graphql.json' => Http::response([
+            'data' => ['products' => ['nodes' => [[
+                'id' => 'gid://shopify/Product/1',
+                'title' => 'sample-title',
+                'variants' => ['nodes' => [[
+                    'id' => 'gid://shopify/ProductVariant/1',
+                    'sku' => null,
+                    'price' => '19.99',
+                    'inventoryQuantity' => null,
+                    'barcode' => null,
+                    'selectedOptions' => [],
+                ]]],
+            ]]]],
+        ], 200),
+    ]);
+
+    $products = Nexus::driver('shopify')->getProducts(now()->subDay());
+
+    expect($products)->toHaveCount(1);
+    expect($products->first()->sku)->toBe('');
+    expect($products->first()->quantity)->toBe(0);
+    expect($products->first()->barcode)->toBeNull();
+});
