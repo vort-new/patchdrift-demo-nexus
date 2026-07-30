@@ -29,14 +29,12 @@ it('can update inventory on amazon', function () {
 
     expect($result)->toBeTrue();
 
-    
     Http::assertSent(function ($request) {
         return $request->url() === 'https://api.amazon.com/auth/o2/token' &&
                $request['grant_type'] === 'refresh_token' &&
                $request['refresh_token'] === 'rt_123';
     });
 
-    
     Http::assertSent(function ($request) {
         $isApiCall = $request->url() === 'https://sellingpartnerapi-na.amazon.com/listings/2021-08-01/items/sid_123/FAKE-SKU';
         $hasMethod = $request->method() === 'PATCH';

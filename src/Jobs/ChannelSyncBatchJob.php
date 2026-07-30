@@ -18,10 +18,7 @@ class ChannelSyncBatchJob implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(protected string $channel)
-    {
-        
-    }
+    public function __construct(protected string $channel) {}
 
     public $tries = 3;
 
@@ -36,14 +33,10 @@ class ChannelSyncBatchJob implements ShouldQueue
             return;
         }
 
-        
         BeforeInventorySync::dispatch($this->channel, $this->batch()?->id);
 
         $processedCount = 0;
 
-        
-        
-        
         ChannelMapping::where('channel', $this->channel)
             ->with('syncable')
             ->chunk(100, function ($mappings) use (&$processedCount) {
@@ -59,7 +52,6 @@ class ChannelSyncBatchJob implements ShouldQueue
                 }
             });
 
-        
         AfterInventorySync::dispatch($this->channel, $processedCount, $this->batch()?->id);
     }
 

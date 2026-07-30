@@ -1,6 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Event;
 use Malikad778\LaravelNexus\Contracts\InventoryDriver;
+use Malikad778\LaravelNexus\Events\ChannelThrottled;
+use Malikad778\LaravelNexus\Events\InventorySyncFailed;
 use Malikad778\LaravelNexus\Facades\Nexus;
 use Malikad778\LaravelNexus\Jobs\PushInventoryJob;
 use Malikad778\LaravelNexus\RateLimiting\TokenBucket;
@@ -25,7 +28,7 @@ it('respects rate limits and updates inventory', function () {
     $job = new PushInventoryJob('shopify', '123', 5);
     $job->handle($limiter);
 
-    expect(true)->toBeTrue(); 
+    expect(true)->toBeTrue();
 });
 
 it('releases job when rate limit exceeded', function () {
@@ -33,14 +36,14 @@ it('releases job when rate limit exceeded', function () {
     $limiter->shouldReceive('acquire')
         ->andReturn(false);
 
-    \Illuminate\Support\Facades\Event::fake();
+    Event::fake();
 
     $job = Mockery::mock(PushInventoryJob::class, ['shopify', '123', 5])->makePartial();
     $job->shouldReceive('release')->with(5)->once();
 
     $job->handle($limiter);
 
-    \Illuminate\Support\Facades\Event::assertDispatched(\Malikad778\LaravelNexus\Events\ChannelThrottled::class, function ($event) {
+    Event::assertDispatched(ChannelThrottled::class, function ($event) {
         return $event->channel === 'shopify' && $event->retryAfter === 5;
     });
 });
@@ -54,18 +57,18 @@ it('dispatches failure event on exception', function () {
 
     Nexus::shouldReceive('driver')->with('shopify')->andReturn($driver);
 
-    \Illuminate\Support\Facades\Event::fake();
+    Event::fake();
 
     $job = new PushInventoryJob('shopify', '123', 5);
 
     try {
         $job->handle($limiter);
     } catch (Exception $e) {
-        
+
         $job->failed($e);
     }
 
-    \Illuminate\Support\Facades\Event::assertDispatched(\Malikad778\LaravelNexus\Events\InventorySyncFailed::class, function ($event) {
+    Event::assertDispatched(InventorySyncFailed::class, function ($event) {
         return $event->channel === 'shopify' && $event->reason === 'API Error';
     });
 });

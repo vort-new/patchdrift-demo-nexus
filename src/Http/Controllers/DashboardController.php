@@ -4,20 +4,21 @@ namespace Malikad778\LaravelNexus\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        
+
         $stats = [
-            'total_products' => \Illuminate\Support\Facades\Schema::hasTable('nexus_channel_mappings')
+            'total_products' => Schema::hasTable('nexus_channel_mappings')
                 ? DB::table('nexus_channel_mappings')->count()
                 : 0,
-            'failed_jobs' => \Illuminate\Support\Facades\Schema::hasTable('nexus_dead_letter_queue')
+            'failed_jobs' => Schema::hasTable('nexus_dead_letter_queue')
                 ? DB::table('nexus_dead_letter_queue')->where('status', 'failed')->count()
                 : 0,
-            'webhook_logs' => \Illuminate\Support\Facades\Schema::hasTable('nexus_webhook_logs')
+            'webhook_logs' => Schema::hasTable('nexus_webhook_logs')
                 ? DB::table('nexus_webhook_logs')->count()
                 : 0,
             'channels' => [
@@ -42,8 +43,8 @@ class DashboardController extends Controller
 
     public function jobs()
     {
-        
-        if (! \Illuminate\Support\Facades\Schema::hasTable('job_batches')) {
+
+        if (! Schema::hasTable('job_batches')) {
             $batches = collect([]);
             $error = "The 'job_batches' table does not exist. Please run 'php artisan queue:batches-table' and migrate.";
         } else {
@@ -69,26 +70,10 @@ class DashboardController extends Controller
     {
         $job = DB::table('nexus_dead_letter_queue')->find($id);
 
-        
         if ($job && is_object($job) && $job->status === 'failed') {
-            
-            
-            
-            
-
-            
-            
-            
 
             try {
                 $payload = json_decode($job->payload, true);
-
-                
-                
-                
-
-                
-                
 
                 if (isset($payload['data']['command'])) {
                     $command = unserialize($payload['data']['command']);
@@ -119,11 +104,10 @@ class DashboardController extends Controller
 
     protected function getChannelStatus(string $channel)
     {
-        
-        
+
         $configured = ! empty(config("nexus.drivers.{$channel}"));
 
-        $errors = \Illuminate\Support\Facades\Schema::hasTable('nexus_dead_letter_queue')
+        $errors = Schema::hasTable('nexus_dead_letter_queue')
             ? DB::table('nexus_dead_letter_queue')
                 ->where('channel', $channel)
                 ->where('status', 'failed')

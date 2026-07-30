@@ -4,6 +4,7 @@ namespace Malikad778\LaravelNexus\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -13,10 +14,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $exception
  * @property string $status
  * @property int $attempts
- * @property \Illuminate\Support\Carbon|null $last_attempt_at
- * @property \Illuminate\Support\Carbon|null $failed_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $last_attempt_at
+ * @property Carbon|null $failed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class NexusDeadLetterQueue extends Model
 {

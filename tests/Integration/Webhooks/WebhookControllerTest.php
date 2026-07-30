@@ -3,20 +3,21 @@
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use Malikad778\LaravelNexus\Events\InventoryUpdated;
 use Malikad778\LaravelNexus\Events\WebhookReceived;
+use Malikad778\LaravelNexus\Tests\TestCase;
 
-class WebhookControllerTest extends \Malikad778\LaravelNexus\Tests\TestCase
+class WebhookControllerTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        
         Route::nexusWebhooks('test-webhooks');
     }
 
-    
     public function it_accepts_valid_shopify_webhook()
     {
         Config::set('nexus.drivers.shopify.webhook_secret', 'secret123');
@@ -24,8 +25,8 @@ class WebhookControllerTest extends \Malikad778\LaravelNexus\Tests\TestCase
         Event::fake();
         $this->withoutExceptionHandling();
 
-        \Illuminate\Support\Facades\Http::fake([
-            '*products/123456.json*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            '*products/123456.json*' => Http::response([
                 'product' => [
                     'id' => 123456,
                     'title' => 'Test Product',
@@ -43,7 +44,7 @@ class WebhookControllerTest extends \Malikad778\LaravelNexus\Tests\TestCase
             ],
         ];
         $payload = json_encode($payloadData);
-        
+
         $signature = base64_encode(hash_hmac('sha256', $payload, 'secret123', true));
 
         $response = $this->postJson('test-webhooks/shopify', $payloadData, [
@@ -53,28 +54,24 @@ class WebhookControllerTest extends \Malikad778\LaravelNexus\Tests\TestCase
 
         $response->assertOk();
 
-        
         $log = DB::table('nexus_webhook_logs')->first();
         expect($log)->not->toBeNull();
         expect($log->channel)->toBe('shopify');
         expect($log->topic)->toBe('products/update');
         expect($log->status)->toBe('processed');
 
-        
         Event::assertDispatched(WebhookReceived::class, function ($event) use ($log) {
             return $event->channel === 'shopify' &&
                    $event->payload['id'] === 123456 &&
                    $event->logId === $log->id;
         });
 
-        
-        Event::assertDispatched(\Malikad778\LaravelNexus\Events\InventoryUpdated::class, function ($event) {
+        Event::assertDispatched(InventoryUpdated::class, function ($event) {
             return $event->channel === 'shopify' &&
                    $event->product->id === '123456';
         });
     }
 
-    
     public function it_rejects_invalid_signature_and_logs_failure()
     {
         Config::set('nexus.drivers.shopify.webhook_secret', 'secret123');
@@ -86,7 +83,6 @@ class WebhookControllerTest extends \Malikad778\LaravelNexus\Tests\TestCase
 
         $response->assertStatus(403);
 
-        
         $log = DB::table('nexus_webhook_logs')->first();
         expect($log)->not->toBeNull();
         expect($log->status)->toBe('failed');

@@ -175,19 +175,16 @@ function getFilesWithPlaceholders(): array
         $path = $file->getPathname();
         $relativePath = str_replace(__DIR__.DIRECTORY_SEPARATOR, '', $path);
 
-        
         foreach ($skipDirs as $skipDir) {
             if (str_starts_with($relativePath, $skipDir.DIRECTORY_SEPARATOR)) {
                 continue 2;
             }
         }
 
-        
         if ($file->getBasename() === $scriptBasename) {
             continue;
         }
 
-        
         $contents = file_get_contents($path);
         foreach ($placeholders as $placeholder) {
             if (stripos($contents, $placeholder) !== false) {
@@ -236,7 +233,7 @@ function getGitHubApiEndpoint(string $endpoint): ?stdClass
             return json_decode($response);
         }
     } catch (Exception $e) {
-        
+
     }
 
     return null;
@@ -275,7 +272,7 @@ function guessGitHubUsernameUsingCli()
             return $matches[1];
         }
     } catch (Exception $e) {
-        
+
     }
 
     return '';
@@ -293,7 +290,6 @@ function guessGitHubUsername(): string
         return $username;
     }
 
-    
     $remoteUrl = shell_exec('git config remote.origin.url') ?? '';
     $remoteUrlParts = explode('/', str_replace(':', '/', trim($remoteUrl)));
 

@@ -25,7 +25,7 @@ class VerifyNexusWebhookSignature
             try {
                 $topic = Nexus::driver($channel)->extractWebhookTopic($request);
             } catch (\Exception $e) {
-                
+
             }
 
             DB::table('nexus_webhook_logs')->insert([

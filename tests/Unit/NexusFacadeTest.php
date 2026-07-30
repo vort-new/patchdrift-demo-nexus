@@ -17,22 +17,16 @@ it('resolves driver via channel alias', function () {
 });
 
 it('passes context to driver', function () {
-    
-    
-    
-    
 
     $context = ['shop_url' => 'override.myshopify.com'];
 
-    
     $manager = Nexus::context($context);
 
     expect($manager)->toBeInstanceOf(InventoryManager::class);
-    expect($manager)->not->toBe(Nexus::getFacadeRoot()); 
+    expect($manager)->not->toBe(Nexus::getFacadeRoot());
 
     $driver = $manager->driver('shopify');
 
-    
     $reflection = new \ReflectionClass($driver);
     $property = $reflection->getProperty('config');
     $property->setAccessible(true);

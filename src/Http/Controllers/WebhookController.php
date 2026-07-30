@@ -11,9 +11,7 @@ class WebhookController extends Controller
 {
     public function __construct(protected WebhookProcessor $processor)
     {
-        
-        
-        
+
         $this->middleware(VerifyNexusWebhookSignature::class);
     }
 

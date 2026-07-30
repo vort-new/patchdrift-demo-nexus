@@ -40,7 +40,7 @@ it('can fetch products from etsy', function () {
 it('can update inventory on etsy', function () {
     config()->set('nexus.drivers.etsy', [
         'client_id' => 'key_123',
-        'refresh_token' => 'rt_123', 
+        'refresh_token' => 'rt_123',
         'shop_id' => 'shop_123',
     ]);
 
@@ -68,14 +68,12 @@ it('can update inventory on etsy', function () {
 
     expect($result)->toBeTrue();
 
-    
     Http::assertSent(function ($request) {
         return $request->url() === 'https://api.etsy.com/v3/public/oauth/token' &&
                $request['grant_type'] === 'refresh_token' &&
                $request['refresh_token'] === 'rt_123';
     });
 
-    
     Http::assertSent(function ($request) {
         if ($request->url() !== 'https://api.etsy.com/v3/application/shops/shop_123/listings/111/inventory') {
             return false;

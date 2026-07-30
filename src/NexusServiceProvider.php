@@ -37,7 +37,7 @@ class NexusServiceProvider extends PackageServiceProvider
 
     public function packageBooted()
     {
-        
+
         if (class_exists(Livewire::class)) {
             Livewire::component('nexus-status-grid', StatusGrid::class);
             Livewire::component('nexus-webhook-log', WebhookLog::class);
@@ -56,15 +56,15 @@ class NexusServiceProvider extends PackageServiceProvider
                     }
 
                     DB::table('nexus_dead_letter_queue')->insert([
-                        'channel'         => $channel,
-                        'job_class'       => $event->job->resolveName(),
-                        'payload'         => json_encode($rawPayload),
-                        'exception'       => (string) $event->exception,
-                        'status'          => 'failed',
-                        'attempts'        => $event->job->attempts(),
+                        'channel' => $channel,
+                        'job_class' => $event->job->resolveName(),
+                        'payload' => json_encode($rawPayload),
+                        'exception' => (string) $event->exception,
+                        'status' => 'failed',
+                        'attempts' => $event->job->attempts(),
                         'last_attempt_at' => now(),
-                        'created_at'      => now(),
-                        'updated_at'      => now(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 } catch (Exception $e) {
                     //
@@ -72,7 +72,6 @@ class NexusServiceProvider extends PackageServiceProvider
             }
         });
 
-        
         $this->registerRoutes();
     }
 
@@ -93,7 +92,6 @@ class NexusServiceProvider extends PackageServiceProvider
                 Route::get('/webhooks', [DashboardController::class, 'webhooks'])->name('nexus.dashboard.webhooks');
                 Route::get('/dlq', [DashboardController::class, 'dlq'])->name('nexus.dashboard.dlq');
 
-                
                 Route::post('/dlq/{id}/retry', [DashboardController::class, 'retryJob'])->name('nexus.dashboard.dlq.retry');
                 Route::delete('/dlq/{id}', [DashboardController::class, 'dismissJob'])->name('nexus.dashboard.dlq.dismiss');
             });

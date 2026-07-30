@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Redis;
 use Malikad778\LaravelNexus\RateLimiting\TokenBucket;
 
 it('can acquire tokens', function () {
-    
+
     Redis::shouldReceive('eval')
         ->once()
         ->withArgs(function (string $script, array $args, int $numKeys) {

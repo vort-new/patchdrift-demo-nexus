@@ -10,9 +10,7 @@ it('verifies valid etsy signature', function () {
     $verifier = new EtsyWebhookVerifier($config);
 
     $payload = '{"foo":"bar"}';
-    $signature = hash_hmac('sha256', $payload, 'secret123'); 
-    
-    
+    $signature = hash_hmac('sha256', $payload, 'secret123');
 
     $request = Request::create('/msg', 'POST', [], [], [], [], $payload);
     $request->headers->set('X-Etsy-Signature', $signature);

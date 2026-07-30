@@ -7,9 +7,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Malikad778\LaravelNexus\Contracts\InventoryDriver;
+use Malikad778\LaravelNexus\Contracts\WebhookVerifier;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusInventoryUpdate;
 use Malikad778\LaravelNexus\DataTransferObjects\NexusProduct;
 use Malikad778\LaravelNexus\DataTransferObjects\RateLimitConfig;
+use Malikad778\LaravelNexus\Webhooks\Verifiers\WooCommerceWebhookVerifier;
 
 class WooCommerceDriver implements InventoryDriver
 {
@@ -84,16 +86,15 @@ class WooCommerceDriver implements InventoryDriver
         return $request->header('X-WC-Webhook-Topic') ?? 'unknown';
     }
 
-    public function getWebhookVerifier(): \Malikad778\LaravelNexus\Contracts\WebhookVerifier
+    public function getWebhookVerifier(): WebhookVerifier
     {
-        return new \Malikad778\LaravelNexus\Webhooks\Verifiers\WooCommerceWebhookVerifier($this->config);
+        return new WooCommerceWebhookVerifier($this->config);
     }
 
     public function parseWebhookPayload(Request $request): NexusInventoryUpdate
     {
         $payload = $request->json()->all();
 
-        
         $id = (string) ($payload['id'] ?? '');
         $sku = $payload['sku'] ?? '';
         $qty = (int) ($payload['stock_quantity'] ?? 0);
@@ -108,7 +109,7 @@ class WooCommerceDriver implements InventoryDriver
 
     public function getRateLimitConfig(): RateLimitConfig
     {
-        
+
         return new RateLimitConfig(
             capacity: 20,
             rate: 2,

@@ -2,31 +2,33 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
+use Malikad778\LaravelNexus\Http\Livewire\DeadLetterQueue;
+use Malikad778\LaravelNexus\Http\Livewire\WebhookLog;
+use Malikad778\LaravelNexus\Tests\TestCase;
 
-class DashboardTest extends \Malikad778\LaravelNexus\Tests\TestCase
+class DashboardTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        
         Route::nexusDashboard('nexus');
     }
 
-    
     public function it_can_render_dashboard()
     {
         $response = $this->get('/nexus');
         $response->assertOk();
 
-        if (class_exists(\Livewire\Livewire::class)) {
+        if (class_exists(Livewire::class)) {
             $response->assertSeeLivewire('nexus-status-grid');
         } else {
             $response->assertSee('Dashboard');
         }
     }
 
-    
     public function it_can_render_webhooks_page()
     {
         DB::table('nexus_webhook_logs')->insert([
@@ -40,10 +42,10 @@ class DashboardTest extends \Malikad778\LaravelNexus\Tests\TestCase
         $response = $this->get('/nexus/webhooks');
         $response->assertOk();
 
-        if (class_exists(\Livewire\Livewire::class)) {
+        if (class_exists(Livewire::class)) {
             $response->assertSeeLivewire('nexus-webhook-log');
 
-            \Livewire\Livewire::test(\Malikad778\LaravelNexus\Http\Livewire\WebhookLog::class)
+            Livewire::test(WebhookLog::class)
                 ->assertSee('shopify')
                 ->assertSee('products/update');
         } else {
@@ -51,7 +53,6 @@ class DashboardTest extends \Malikad778\LaravelNexus\Tests\TestCase
         }
     }
 
-    
     public function it_can_render_dlq_page()
     {
         DB::table('nexus_dead_letter_queue')->insert([
@@ -66,31 +67,29 @@ class DashboardTest extends \Malikad778\LaravelNexus\Tests\TestCase
         $response = $this->get('/nexus/dlq');
         $response->assertOk();
 
-        if (class_exists(\Livewire\Livewire::class)) {
+        if (class_exists(Livewire::class)) {
             $response->assertSeeLivewire('nexus-dead-letter-queue');
 
-            \Livewire\Livewire::test(\Malikad778\LaravelNexus\Http\Livewire\DeadLetterQueue::class)
+            Livewire::test(DeadLetterQueue::class)
                 ->assertSee('SomeJob');
         } else {
             $response->assertSee('Dead Letter Queue');
         }
     }
 
-    
     public function it_can_render_jobs_page_with_missing_table()
     {
-        
+
         $response = $this->get('/nexus/jobs');
         $response->assertOk();
         $response->assertSee('Configuration Needed');
     }
 
-    
     public function it_can_render_jobs_page_with_batches()
     {
-        
-        if (! \Illuminate\Support\Facades\Schema::hasTable('job_batches')) {
-            \Illuminate\Support\Facades\Schema::create('job_batches', function ($table) {
+
+        if (! Schema::hasTable('job_batches')) {
+            Schema::create('job_batches', function ($table) {
                 $table->string('id')->primary();
                 $table->string('name');
                 $table->integer('total_jobs');
@@ -117,10 +116,9 @@ class DashboardTest extends \Malikad778\LaravelNexus\Tests\TestCase
         $response = $this->get('/nexus/jobs');
         $response->assertOk();
         $response->assertSee('Test Batch');
-        $response->assertSee('50%'); 
+        $response->assertSee('50%');
     }
 
-    
     public function it_can_dismiss_dlq_job()
     {
         $id = DB::table('nexus_dead_letter_queue')->insertGetId([

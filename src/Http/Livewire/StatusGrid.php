@@ -2,6 +2,8 @@
 
 namespace Malikad778\LaravelNexus\Http\Livewire;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Malikad778\LaravelNexus\Models\NexusSyncJob;
 
@@ -13,22 +15,22 @@ class StatusGrid extends Component
         $stats = [];
 
         foreach ($drivers as $driver) {
-            
+
             $lastError = NexusSyncJob::where('channel', $driver)->where('status', 'failed')->latest()->first();
-            $lastThrottle = \Illuminate\Support\Facades\DB::table('nexus_rate_limit_logs')
+            $lastThrottle = DB::table('nexus_rate_limit_logs')
                 ->where('channel', $driver)
                 ->where('was_limited', true)
                 ->latest()
                 ->first();
 
             $health = 'Connected';
-            if ($lastThrottle && \Illuminate\Support\Carbon::parse($lastThrottle->created_at)->diffInMinutes() < 10) {
+            if ($lastThrottle && Carbon::parse($lastThrottle->created_at)->diffInMinutes() < 10) {
                 $health = 'Throttled';
-            } elseif ($lastError && \Illuminate\Support\Carbon::parse($lastError->finished_at)->diffInHours() < 1) {
+            } elseif ($lastError && Carbon::parse($lastError->finished_at)->diffInHours() < 1) {
                 $health = 'Disconnected';
             }
 
-            $rateLimit = \Illuminate\Support\Facades\DB::table('nexus_rate_limit_logs')
+            $rateLimit = DB::table('nexus_rate_limit_logs')
                 ->where('channel', $driver)
                 ->latest()
                 ->first();

@@ -2,6 +2,7 @@
 
 namespace Malikad778\LaravelNexus\Builders;
 
+use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
 use Malikad778\LaravelNexus\Jobs\ChannelSyncBatchJob;
 
@@ -41,12 +42,12 @@ class CatalogSyncBuilder
         return $this;
     }
 
-    public function sync(): \Illuminate\Bus\Batch
+    public function sync(): Batch
     {
         return $this->syncAll($this->channels);
     }
 
-    public function syncAll(array $channels = []): \Illuminate\Bus\Batch
+    public function syncAll(array $channels = []): Batch
     {
         $channels = ! empty($channels) ? $channels : (! empty($this->channels) ? $this->channels : array_keys(config('nexus.drivers', [])));
 
